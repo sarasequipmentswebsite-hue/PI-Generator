@@ -112,7 +112,7 @@ function ItemsColHeader() {
       <th className="ih ih-center">HSN/SAC</th>
       <th className="ih ih-center">Quantity</th>
       <th className="ih ih-center">Rate</th>
-      <th className="ih ih-center">Per</th>
+      <th className="ih ih-center">Unit</th>
       <th className="ih ih-right">Amount</th>
     </tr>
   );
@@ -134,7 +134,7 @@ function ItemRow({ item, idx, fmt, currency }) {
             )
           : ''}
       </td>
-      <td className="ib ib-center">{item.per}</td>
+      <td className="ib ib-center">{item.Unit}</td>
       <td className="ib ib-right">{item.amount ? fmt(item.amount) : ''}</td>
     </tr>
   );

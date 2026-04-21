@@ -150,14 +150,55 @@
 .items-tbl thead { flex-shrink: 0; display: table; width: 100%; table-layout: fixed; }
 .items-tbl tbody { flex: 1; display: flex; flex-direction: column; }
 
-/* colgroup widths */
-.ic-sl   { width: 5%; }
-.ic-desc { width: 38%; }
-.ic-hsn  { width: 9%; }
-.ic-qty  { width: 8%; }
-.ic-rate { width: 15%; }
-.ic-per  { width: 8%; }
-.ic-amt  { width: 17%; }
+/* colgroup widths - updated: narrower narrow columns, wider description */
+/* REPLACE WITH — colgroup widths are ignored in flex, so we target cells directly: */
+.ic-sl   { width: 3%; }
+.ic-hsn  { width: 11%; }
+.ic-qty  { width: 10%; }
+.ic-desc { width: 50%; }
+.ic-rate { width: 9%; }
+.ic-per  { width: 5%; }
+.ic-amt  { width: 10%; }
+
+/* Force widths onto actual th cells */
+/* REPLACE WITH: */
+.items-tbl thead th:nth-child(1) { width: 3%;  min-width: 3%;  max-width: 3%;  text-align: center; vertical-align: middle; }
+.items-tbl thead th:nth-child(2) { width: 50%; min-width: 50%; max-width: 50%; text-align: center; vertical-align: middle; }
+.items-tbl thead th:nth-child(3) { width: 11%; min-width: 11%; max-width: 11%; text-align: center; vertical-align: middle; }
+.items-tbl thead th:nth-child(4) { width: 10%; min-width: 10%; max-width: 10%; text-align: center; vertical-align: middle; }
+.items-tbl thead th:nth-child(5) { width: 9%;  min-width: 9%;  max-width: 9%;  text-align: center; vertical-align: middle; }
+.items-tbl thead th:nth-child(6) { width: 5%;  min-width: 5%;  max-width: 5%;  text-align: center; vertical-align: middle; }
+.items-tbl thead th:nth-child(7) { width: 12%; min-width: 12%; max-width: 12%; text-align: right;  vertical-align: middle; padding-right: 3px; }
+
+/* Force same widths onto all td cells in every row type */
+/* FIND all 7 td nth-child blocks and REPLACE WITH: */
+.item-row td:nth-child(1), .stretch-row td:nth-child(1),
+.discount-row td:nth-child(1), .gst-line-row td:nth-child(1),
+.total-row td:nth-child(1) { width: 3%;  min-width: 3%;  max-width: 3%; }
+
+.item-row td:nth-child(2), .stretch-row td:nth-child(2),
+.discount-row td:nth-child(2), .gst-line-row td:nth-child(2),
+.total-row td:nth-child(2) { width: 50%; min-width: 50%; max-width: 50%; }
+
+.item-row td:nth-child(3), .stretch-row td:nth-child(3),
+.discount-row td:nth-child(3), .gst-line-row td:nth-child(3),
+.total-row td:nth-child(3) { width: 11%; min-width: 11%; max-width: 11%; }
+
+.item-row td:nth-child(4), .stretch-row td:nth-child(4),
+.discount-row td:nth-child(4), .gst-line-row td:nth-child(4),
+.total-row td:nth-child(4) { width: 10%; min-width: 10%; max-width: 10%; }
+
+.item-row td:nth-child(5), .stretch-row td:nth-child(5),
+.discount-row td:nth-child(5), .gst-line-row td:nth-child(5),
+.total-row td:nth-child(5) { width: 9%;  min-width: 9%;  max-width: 9%; }
+
+.item-row td:nth-child(6), .stretch-row td:nth-child(6),
+.discount-row td:nth-child(6), .gst-line-row td:nth-child(6),
+.total-row td:nth-child(6) { width: 5%;  min-width: 5%;  max-width: 5%; }
+
+.item-row td:nth-child(7), .stretch-row td:nth-child(7),
+.discount-row td:nth-child(7), .gst-line-row td:nth-child(7),
+.total-row td:nth-child(7) { width: 12%; min-width: 12%; max-width: 12%; }
 
 /* Header cells */
 .items-hdr-row {
@@ -169,7 +210,8 @@
 }
 
 .ih {
-  padding: 1.5mm 1.5mm;
+  padding: 3px;
+  box-sizing: border-box;
   font-size: 8pt;
   font-weight: 700;
   border: 1px solid #999;
@@ -187,17 +229,15 @@
   table-layout: fixed;
 }
 
-.item-row td {
-  padding: 1.5mm 1.5mm;
-  padding-top: 2mm;
-  padding-bottom: 2mm;
-}
+/* .item-row td padding overridden by .ib for 3px uniformity */
 
 /* ── BODY CELLS (shared by item rows, discount row, gst row) ── */
 .ib {
   font-size: 8pt;
   border: 1px solid #ccc;
   vertical-align: top;
+  padding: 3px;
+  box-sizing: border-box;
   overflow: hidden;
   word-break: break-word;
 }
@@ -205,7 +245,7 @@
 .ib-center { text-align: center; }
 .ib-left   { text-align: left; }
 .ib-right  { text-align: right; }
-.ib-desc   { white-space: pre-wrap; line-height: 1.4; }
+.ib-desc   { white-space: pre-wrap; line-height: 1; }
 
 /* ── STRETCH ROW — fills all unused vertical space ──────────────
    Each cell has its own left/right border so all 7 column lines
@@ -224,7 +264,7 @@
   border-right: 1px solid #ccc;
   border-top: none;
   border-bottom: none;
-  padding: 0;
+  padding: 3px;
 }
 
 /* ── DISCOUNT ROW ───────────────────────────────────────────────
@@ -237,7 +277,8 @@
 }
 
 .discount-row td {
-  padding: 1mm 1.5mm;
+  padding: 3px;
+  box-sizing: border-box;
   font-size: 8pt;
   border-left: 1px solid #ccc;
   border-right: 1px solid #ccc;
@@ -257,7 +298,8 @@
 }
 
 .gst-line-row td {
-  padding: 1mm 1.5mm;
+  padding: 3px;
+  box-sizing: border-box;
   font-size: 8pt;
   border-left: 1px solid #ccc;
   border-right: 1px solid #ccc;
@@ -275,7 +317,8 @@
 .total-row td {
   border: 1px solid #888;
   border-top: 2px solid #000;
-  padding: 1.5mm 1.5mm;
+  padding: 3px;
+  box-sizing: border-box;
   font-size: 8.5pt;
   vertical-align: middle;
   overflow: hidden;
