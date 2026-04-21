@@ -1,0 +1,455 @@
+/* ════════════════════════════════════════════════════════════════
+   INVOICE PAGE — A4 layout, column lines full, bottom-pinned footer
+   ════════════════════════════════════════════════════════════════ */
+
+/* ── PAGE SHELL ─────────────────────────────────────────────────
+   height: 280mm as you set. display:flex + flex-direction:column
+   lets items-tbl grow (flex:1) and bottom-tbl stay pinned at end.
+──────────────────────────────────────────────────────────────── */
+.inv-page {
+  font-family: Arial, sans-serif;
+  font-size: 9pt;
+  color: #000;
+  background: #fff;
+  width: 100%;
+  height: 280mm;           /* your fixed page height */
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;  /* children stack vertically */
+  border: 1.5px solid #000;
+  overflow: hidden;        /* never let content bust out */
+  page-break-after: always;
+}
+
+/* When content overflows onto a second page, the second .inv-page
+   div will be rendered by html2pdf on a fresh page automatically.   */
+
+/* ── LETTERHEAD ─────────────────────────────────────────────────*/
+.letterhead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 3mm 3mm 2mm 3mm;
+  border-bottom: 1.5px solid #000;
+  gap: 4mm;
+  flex-shrink: 0;          /* never compress the header */
+}
+
+.lh-left  { flex: 1; min-width: 0; }
+.lh-right { text-align: right; flex-shrink: 0; }
+
+.lh-company {
+  font-size: 14pt;
+  font-weight: bold;
+  margin-bottom: 0.5mm;
+  line-height: 1.2;
+}
+
+.lh-addr {
+  font-size: 7.5pt;
+  line-height: 1.5;
+  color: #111;
+}
+
+.lh-title {
+  font-size: 12pt;
+  font-weight: bold;
+  text-decoration: underline;
+  margin-bottom: 0.5mm;
+}
+
+.lh-orig {
+  font-size: 7.5pt;
+  font-style: italic;
+  color: #333;
+}
+
+/* ── META TABLE ─────────────────────────────────────────────────*/
+.meta-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  flex-shrink: 0;
+}
+
+.meta-tbl td {
+  padding: 1mm 2.5mm;
+  font-size: 8pt;
+  border: 1px solid #bbb;
+  vertical-align: middle;
+  line-height: 1.3;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.ml {
+  font-weight: 600;
+  background: #fafafa;
+  white-space: nowrap;
+  width: 14%;
+}
+
+.mv      { width: 22%; }
+.mv-bold { font-weight: 700; font-size: 9pt; }
+
+/* ── PARTY TABLE ────────────────────────────────────────────────*/
+.party-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  flex-shrink: 0;
+}
+
+.party-hdr {
+  background: #f0f0f0;
+  font-size: 7.5pt;
+  font-weight: 700;
+  padding: 1mm 2.5mm;
+  border: 1px solid #999;
+  text-transform: uppercase;
+  width: 50%;
+}
+
+.party-hdr-r  { border-left: 1.5px solid #000; }
+
+.party-body {
+  padding: 2mm 2.5mm;
+  vertical-align: top;
+  font-size: 8pt;
+  border: 1px solid #bbb;
+  line-height: 1.5;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.party-body-r { border-left: 1.5px solid #000; }
+
+.party-name  { font-weight: bold; margin-bottom: 0.5mm; }
+.party-addr  { white-space: pre-wrap; margin-bottom: 0.5mm; }
+.party-meta  { font-size: 7.5pt; }
+
+/* ── ITEMS TABLE ────────────────────────────────────────────────
+   flex: 1  →  grows to consume ALL remaining vertical space after
+               letterhead + meta + party.
+   This is what makes the column lines extend to the Total row
+   whether items are few or many.
+──────────────────────────────────────────────────────────────── */
+.items-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  flex: 1;                 /* ← KEY: fill remaining page height */
+  /* Tables can't flex on their own — we use display:block trick */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Make thead / tbody behave inside flex */
+.items-tbl thead { flex-shrink: 0; display: table; width: 100%; table-layout: fixed; }
+.items-tbl tbody { flex: 1; display: flex; flex-direction: column; }
+
+/* colgroup widths */
+.ic-sl   { width: 5%; }
+.ic-desc { width: 38%; }
+.ic-hsn  { width: 9%; }
+.ic-qty  { width: 8%; }
+.ic-rate { width: 15%; }
+.ic-per  { width: 8%; }
+.ic-amt  { width: 17%; }
+
+/* Header cells */
+.items-hdr-row {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  border-top: 1.5px solid #000;
+  border-bottom: 1.5px solid #000;
+}
+
+.ih {
+  padding: 1.5mm 1.5mm;
+  font-size: 8pt;
+  font-weight: 700;
+  border: 1px solid #999;
+  vertical-align: middle;
+  background: #fff;
+}
+
+.ih-center { text-align: center; }
+.ih-right  { text-align: right; }
+
+/* Item rows */
+.item-row {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.item-row td {
+  padding: 1.5mm 1.5mm;
+  padding-top: 2mm;
+  padding-bottom: 2mm;
+}
+
+/* ── BODY CELLS (shared by item rows, discount row, gst row) ── */
+.ib {
+  font-size: 8pt;
+  border: 1px solid #ccc;
+  vertical-align: top;
+  overflow: hidden;
+  word-break: break-word;
+}
+
+.ib-center { text-align: center; }
+.ib-left   { text-align: left; }
+.ib-right  { text-align: right; }
+.ib-desc   { white-space: pre-wrap; line-height: 1.4; }
+
+/* ── STRETCH ROW — fills all unused vertical space ──────────────
+   Each cell has its own left/right border so all 7 column lines
+   are drawn from the last item all the way to the summary rows,
+   making the grid look complete even with few items.
+──────────────────────────────────────────────────────────────── */
+.stretch-row {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+  flex: 1;                 /* expands to fill remaining tbody space */
+}
+
+.stretch-cell {
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-top: none;
+  border-bottom: none;
+  padding: 0;
+}
+
+/* ── DISCOUNT ROW ───────────────────────────────────────────────
+   "Less: Discount" in description col, value in rate col
+──────────────────────────────────────────────────────────────── */
+.discount-row {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.discount-row td {
+  padding: 1mm 1.5mm;
+  font-size: 8pt;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-top: none;
+  border-bottom: none;
+}
+
+.dr-desc { color: #880000; font-weight: 600; }
+.dr-rate { color: #880000; text-align: right; }
+.dr-amt  { color: #880000; text-align: right; }
+
+/* ── GST LINE ROW ───────────────────────────────────────────────*/
+.gst-line-row {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.gst-line-row td {
+  padding: 1mm 1.5mm;
+  font-size: 8pt;
+  border-left: 1px solid #ccc;
+  border-right: 1px solid #ccc;
+  border-top: none;
+  border-bottom: none;
+}
+
+/* ── TOTAL ROW ──────────────────────────────────────────────────*/
+.total-row {
+  display: table;
+  width: 100%;
+  table-layout: fixed;
+}
+
+.total-row td {
+  border: 1px solid #888;
+  border-top: 2px solid #000;
+  padding: 1.5mm 1.5mm;
+  font-size: 8.5pt;
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+.tr-blank { }
+.tr-label { text-align: right; font-weight: 700; font-size: 9pt; }
+.tr-qty   { text-align: center; font-weight: 700; }
+.tr-amt   { text-align: right; font-weight: 700; font-size: 9.5pt; }
+
+/* ── AMOUNT IN WORDS BAR ────────────────────────────────────────*/
+.words-bar {
+  display: flex;
+  align-items: baseline;
+  gap: 2mm;
+  padding: 1.5mm 2.5mm;
+  border-top: 1px solid #888;
+  border-bottom: 1px solid #aaa;
+  font-size: 8pt;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.words-label  { font-weight: 700; white-space: nowrap; flex-shrink: 0; }
+.words-val    { flex: 1; font-size: 8pt; min-width: 0; word-break: break-word; }
+.words-eo     { margin-left: auto; white-space: nowrap; font-size: 8pt; color: #444; flex-shrink: 0; }
+
+/* ── GST SUMMARY TABLE ──────────────────────────────────────────*/
+.gst-sum-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  flex-shrink: 0;
+}
+
+.gsc-empty   { width: 38%; }
+.gsc-taxable { width: 17%; }
+.gsc-rate    { width: 8%; }
+.gsc-amount  { width: 17%; }
+.gsc-total   { width: 20%; }
+
+.gsh {
+  padding: 1mm 1.5mm;
+  font-size: 8pt;
+  font-weight: 700;
+  text-align: center;
+  border: 1px solid #aaa;
+  background: #f5f5f5;
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+.gsh-left {
+  text-align: left;
+  background: #fff;
+  border-color: transparent;
+  border-right: 1px solid #aaa;
+}
+
+.gsd {
+  padding: 1mm 1.5mm;
+  font-size: 8pt;
+  border: 1px solid #aaa;
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+.gsd-right  { text-align: right; }
+.gsd-center { text-align: center; }
+
+.gsd-total-row td {
+  background: #f5f5f5;
+  border-top: 1.5px solid #000;
+}
+
+/* ── BOTTOM SPACER (pushes bottom-tbl down when page has room) ──
+   This element has flex:0 normally but when the page is NOT full
+   it acts as cushion between gst-sum-tbl and bottom-tbl.
+   Since .inv-page is fixed at 280mm and items-tbl already takes
+   flex:1, this spacer is 0 height in practice — the table fills.
+──────────────────────────────────────────────────────────────── */
+.bottom-spacer {
+  flex-shrink: 0;
+  height: 0;
+}
+
+/* ── DECLARATION + BANK TABLE ───────────────────────────────────
+   flex-shrink:0 ensures it is never compressed — always at bottom.
+──────────────────────────────────────────────────────────────── */
+.bottom-tbl {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  flex-shrink: 0;          /* never compress; stays pinned at bottom */
+}
+
+.bot-left {
+  border: 1px solid #bbb;
+  border-left: none;
+  padding: 2mm 2.5mm;
+  vertical-align: top;
+  font-size: 7.5pt;
+  width: 55%;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.bot-right {
+  border: 1px solid #bbb;
+  border-right: none;
+  border-left: 1.5px solid #000;
+  padding: 2mm 2.5mm;
+  vertical-align: top;
+  font-size: 8pt;
+  width: 45%;
+  word-break: break-word;
+}
+
+.bot-decl-hdr {
+  font-weight: bold;
+  font-size: 8pt;
+  text-decoration: underline;
+  margin-bottom: 1mm;
+}
+
+.bot-decl-body {
+  font-size: 7pt;
+  color: #222;
+  line-height: 1.55;
+  margin: 0 0 1.5mm 0;
+}
+
+.bot-pan     { font-size: 8pt; margin-top: 1mm; }
+.bot-pan-val { font-size: 8pt; margin-bottom: 0.5mm; }
+.bot-cgi     { font-size: 7.5pt; margin-top: 0.5mm; }
+
+.bot-bank-hdr {
+  font-size: 9.5pt;
+  font-weight: bold;
+  margin-bottom: 1.5mm;
+}
+
+.bot-bank-row {
+  display: flex;
+  gap: 2mm;
+  font-size: 8pt;
+  margin-bottom: 0.8mm;
+  align-items: baseline;
+}
+
+.bk-key {
+  min-width: 20mm;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.bk-val { flex: 1; min-width: 0; word-break: break-word; }
+
+.bot-signatory {
+  text-align: right;
+  font-size: 8pt;
+  margin-top: 2mm;
+}
+
+.sig-gap { height: 8mm; }
+
+/* ════════════════════════════════════════════════════════════════
+   MULTI-PAGE SUPPORT
+   When items overflow, wrap content in multiple .inv-page divs.
+   html2pdf treats each one as a separate page.
+   The .page-break class forces a hard break before a new page.
+   ════════════════════════════════════════════════════════════════ */
+.page-break {
+  page-break-before: always;
+  break-before: page;
+}
