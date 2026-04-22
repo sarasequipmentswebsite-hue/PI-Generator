@@ -9,8 +9,8 @@ import './InvoicePreview.css';
    Continuation pages: header+meta+party ~105mm, items ~135mm ≈ 9 items.
    Tune ITEMS_PER_FIRST_PAGE / ITEMS_PER_CONT_PAGE if needed.
 ────────────────────────────────────────────────────────────── */
-const ITEMS_PER_FIRST_PAGE = 6;
-const ITEMS_PER_CONT_PAGE  = 9;
+const ITEMS_PER_FIRST_PAGE = 11;
+const ITEMS_PER_CONT_PAGE  = 14;
 
 /* ── Repeating page header: letterhead + meta + buyer/consignee ── */
 function PageHeader({ f, invoiceNo }) {
