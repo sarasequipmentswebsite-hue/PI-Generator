@@ -344,8 +344,10 @@ export default function InvoicePreview({ formData }) {
                     <td className="bot-left">
                       <div className="bot-decl-hdr">Declaration</div>
                       <p className="bot-decl-body">
+                      <br>
                         1. We declare that this invoice shows the actual price of the goods described
-                        and that all particulars are true and correct.<br />
+                        and that all particulars are true and correct.
+                        </br>
                         <br>
                         2. No changes are valid after 15 days from the date mentioned in the Invoice.
                         </br>
