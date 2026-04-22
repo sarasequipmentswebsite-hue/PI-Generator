@@ -347,8 +347,11 @@ export default function InvoicePreview({ formData }) {
                         1. We declare that this invoice shows the actual price of the goods described
                         and that all particulars are true and correct.<br />
                         2. No changes are valid after 15 days from the date mentioned in the Invoice.
+                        <br />
                         3. Cheque returned unpaid from the bank are subjected to return charges Rs.500.
+                        <br />
                         4. All Dispute subject to delhi juridiction.
+                        <br />
                         5. Interest @24% P.A. will be charged if the payment is not made within the stipulated time.
                       </p>
                       <div className="bot-pan"><u>Company's PAN:</u></div>
