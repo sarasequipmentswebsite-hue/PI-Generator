@@ -346,10 +346,18 @@ export default function InvoicePreview({ formData }) {
                       <p className="bot-decl-body">
                         1. We declare that this invoice shows the actual price of the goods described
                         and that all particulars are true and correct.<br />
+                        <br>
                         2. No changes are valid after 15 days from the date mentioned in the Invoice.
+                        </br>
+                        <br>
                         3. Cheque returned unpaid from the bank are subjected to return charges Rs.500.
+                        </br>
+                        <br >
                         4. All Dispute subject to delhi juridiction.
+                        </br>
+                        <br>
                         5. Interest @24% P.A. will be charged if the payment is not made within the stipulated time.
+                        </br>
                       </p>
                       <div className="bot-pan"><u>Company's PAN:</u></div>
                       <div className="bot-pan-val"><em>{f.companyPan}</em></div>
@@ -376,6 +384,7 @@ export default function InvoicePreview({ formData }) {
                       </div>
                     </td>
                   </tr>
+                  
                 </tbody>
               </table>
             </>
