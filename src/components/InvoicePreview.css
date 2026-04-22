@@ -6,21 +6,38 @@
    height: 280mm as you set. display:flex + flex-direction:column
    lets items-tbl grow (flex:1) and bottom-tbl stay pinned at end.
 ──────────────────────────────────────────────────────────────── */
+/* REPLACE WITH: */
 .inv-page {
   font-family: Arial, sans-serif;
   font-size: 9pt;
   color: #000;
   background: #fff;
   width: 100%;
-  height: 280mm;           /* your fixed page height */
+  height: 280mm;
   margin: 0;
   padding: 0;
   box-sizing: border-box;
   display: flex;
-  flex-direction: column;  /* children stack vertically */
-  border: 1.5px solid #000;
-  overflow: hidden;        /* never let content bust out */
+  flex-direction: column;
+  /* Remove full border — draw each side separately */
+  border: none;
+  border-left: 1.5px solid #000;
+  border-right: 1.5px solid #000;
+  border-bottom: 1.5px solid #000;
+  /* Top border only on FIRST page */
+  overflow: hidden;
   page-break-after: always;
+  break-after: page;
+}
+
+/* First page gets a top border normally */
+.inv-page:first-child {
+  border-top: 1.5px solid #000;
+}
+
+/* Every page after first — top border comes from page-top-line div */
+.inv-page:not(:first-child) {
+  border-top: none;
 }
 
 /* When content overflows onto a second page, the second .inv-page
@@ -495,4 +512,27 @@
 .page-break {
   page-break-before: always;
   break-before: page;
+}
+.continued-bar {
+  flex-shrink: 0;
+  border-top: 1.5px solid #000;
+  border-left: none;
+  border-right: none;
+  border-bottom: none;
+  padding: 2mm 3mm;
+  font-size: 8pt;
+  font-style: italic;
+  font-weight: 600;
+  color: #333;
+  text-align: right;
+  background: #fafafa;
+}
+
+.page-top-border {
+  width: 100%;
+  height: 0;
+  border-top: 1.5px solid #000;
+  flex-shrink: 0;
+  margin: 0;
+  padding: 0;
 }

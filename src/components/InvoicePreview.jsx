@@ -197,6 +197,14 @@ export default function InvoicePreview({ formData }) {
           key={pageIdx}
           className="inv-page"
         >
+
+            {/* Top border line for pages after first — prevents
+              it from appearing at bottom of previous page */}
+          {pageIdx > 0 && (
+            <div className="page-top-border"></div>
+          )}
+
+          
           {/* ── HEADER on EVERY page ── */}
           <PageHeader f={f} invoiceNo={invoiceNo} />
 
@@ -284,6 +292,12 @@ export default function InvoicePreview({ formData }) {
 
             </tbody>
           </table>
+
+           {!isLastPage(pageIdx) && (
+          <div className="continued-bar">
+            <span>Continued on next page...</span>
+          </div>
+        )}
 
           {/* ── Footer sections only on LAST page ── */}
           {isLastPage(pageIdx) && (
