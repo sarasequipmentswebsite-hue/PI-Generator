@@ -10,7 +10,7 @@ import './InvoicePreview.css';
    Tune ITEMS_PER_FIRST_PAGE / ITEMS_PER_CONT_PAGE if needed.
 ────────────────────────────────────────────────────────────── */
 const ITEMS_PER_FIRST_PAGE =35;
-const ITEMS_PER_CONT_PAGE  = 40;
+const ITEMS_PER_CONT_PAGE  = 35;
 
 /* ── Repeating page header: letterhead + meta + buyer/consignee ── */
 function PageHeader({ f, invoiceNo }) {
