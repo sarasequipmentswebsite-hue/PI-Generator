@@ -14,14 +14,14 @@ function seedUsers() {
   if (existing) return;
   const defaultUsers = [
     { id: 1,  username: 'Neelam',   password: 'SARAS', full_name: 'Neelam' },
-    { id: 2,  username: 'Dilip',   password: 'SARAS', full_name: 'Priya Singh'  },
+    { id: 2,  username: 'Dilip',   password: 'SARAS', full_name: 'Dilip Kumar Gupta'  },
     { id: 3,  username: 'Barkha',    password: 'SARAS', full_name: 'Barkha'   },
     { id: 4,  username: 'Sourabh',   password: 'SARAS', full_name: 'Sourabh'  },
     { id: 5,  username: 'Vishal',  password: 'SARAS', full_name: 'Vishal' },
     { id: 6,  username: 'Ankit',   password: 'SARAS', full_name: 'Ankit'  },
     { id: 7,  username: 'Satnam',   password: 'SARAS', full_name: 'Satnam'  },
     { id: 8,  username: 'Viplabh',   password: 'SARAS', full_name: 'Viplabh'   },
-    // { id: 9,  username: 'arjun',   password: 'SARAS', full_name: 'Arjun Das'    },
+    { id: 9,  username: 'Kuldeep',   password: 'SARAS', full_name: 'Kuldeep Singh Chauhan'    },
     // { id: 10, username: 'meena',   password: 'SARAS', full_name: 'Meena Joshi'  },
   ];
   localStorage.setItem(USERS_KEY, JSON.stringify(defaultUsers));
