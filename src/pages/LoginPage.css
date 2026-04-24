@@ -1,0 +1,126 @@
+.lp-root {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.lp-card {
+  background: #fff;
+  border-radius: 14px;
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.lp-logo {
+  width: 56px;
+  height: 56px;
+  background: #1e3a5f;
+  color: #f59e0b;
+  border-radius: 12px;
+  font-size: 1.3rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: -0.05em;
+}
+
+.lp-company {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+  text-align: center;
+  margin: 0;
+}
+
+.lp-sub {
+  font-size: 0.78rem;
+  color: #64748b;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.lp-error {
+  width: 100%;
+  background: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  padding: 0.55rem 0.85rem;
+  border-radius: 7px;
+  font-size: 0.82rem;
+  text-align: center;
+}
+
+.lp-field {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.lp-field label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.lp-field input {
+  padding: 0.65rem 0.9rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #1e293b;
+  font-family: inherit;
+  transition: border-color 0.2s;
+  background: #f8fafc;
+}
+
+.lp-field input:focus {
+  outline: none;
+  border-color: #1e3a5f;
+  background: #fff;
+}
+
+.lp-btn {
+  width: 100%;
+  padding: 0.7rem;
+  background: #1e3a5f;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: 0.25rem;
+}
+
+.lp-btn:hover:not(:disabled) {
+  background: #2d5a8e;
+  transform: translateY(-1px);
+}
+
+.lp-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.lp-hint {
+  font-size: 0.73rem;
+  color: #94a3b8;
+  text-align: center;
+  margin: 0;
+}
