@@ -158,7 +158,9 @@ export default function InvoicePreview({ formData }) {
   const f = formData;
   const { discountAmt, taxableValue, gst, grandTotal, totalQty } = getInvoiceTotals(f);
   const fmt       = (n) => fmtCurrency(n, f.currency);
-  const invoiceNo = `SEPL/PI/SL/26-27/${f.invoiceSuffix || ''}`;
+  const empId     = f.employeeId || 'SL';
+const invoiceNo = f.invoiceNo  // if loaded from saved record, use stored value
+  || `SEPL/PI/${empId}/26-27/${f.invoiceSuffix || ''}`;
 
   const amountInWords = f.currency === 'INR'
     ? numberToWordsINR(grandTotal)

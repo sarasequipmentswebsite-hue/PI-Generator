@@ -75,23 +75,28 @@ export default function App() {
   }, []);
 
   // ── when user logs in: load next invoice number ─────────────────
-  useEffect(() => {
-    if (user && !isEdit) {
-      loadNextNo();
-    }
-  }, [user]);
-
-  function loadNextNo() {
-    const res = fetchNextNo();
-    if (res.success) {
-      setFormData(prev => ({ ...prev, invoiceSuffix: String(res.next_suffix) }));
-    }
+useEffect(() => {
+  if (user && !isEdit) {
+    loadNextNo(user.employee_id);
   }
+}, [user]);
+
+function loadNextNo(employeeId) {
+  const res = fetchNextNo(employeeId);
+  if (res.success) {
+    setFormData(prev => ({
+      ...prev,
+      invoiceSuffix: String(res.next_suffix),
+      employeeId:    employeeId,   // store in formData so preview uses it
+    }));
+  }
+}
 
   // ── auth handlers ───────────────────────────────────────────────
-  const handleLogin = (userData) => {
-    setUser(userData);
-  };
+ const handleLogin = (userData) => {
+  // employee_id comes from loginUser() in storage.js
+  setUser(userData);
+};
 
   const handleLogout = () => {
     logoutUser();
@@ -105,15 +110,17 @@ export default function App() {
 
   // ── new PI ──────────────────────────────────────────────────────
   const handleNewPI = () => {
-    const res  = fetchNextNo();
-    const form = blankForm();
-    if (res.success) form.invoiceSuffix = String(res.next_suffix);
-    setFormData(form);
-    setIsEdit(false);
-    setSaveMsg('');
-    setView('invoice');
-    setActiveTab('form');
-  };
+  const empId = user?.employee_id || 'XX';
+  const res   = fetchNextNo(empId);
+  const form  = blankForm();
+  if (res.success) form.invoiceSuffix = String(res.next_suffix);
+  form.employeeId = empId;
+  setFormData(form);
+  setIsEdit(false);
+  setSaveMsg('');
+  setView('invoice');
+  setActiveTab('form');
+};
 
   // ── edit existing PI (called from HistoryPage) ──────────────────
   const handleEditInvoice = (savedFormData) => {
@@ -142,14 +149,27 @@ export default function App() {
     const filename  = `SEPL-PI-SL-26-27-${formData.invoiceSuffix}_${buyerSafe}.pdf`;
 
     const html2pdf = (await import('html2pdf.js')).default;
-    const opt = {
-      margin:      [6, 6, 6, 6],
-      filename,
-      image:       { type: 'jpeg', quality: 0.98 },
-      html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
-      jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak:   { mode: ['css', 'legacy'] },
-    };
+   // REPLACE WITH:
+const opt = {
+  margin:      [6, 6, 6, 6],
+  filename,
+  // Use 'png' not 'jpeg' — better text rendering
+  image:       { type: 'png', quality: 1 },
+  html2canvas: {
+    scale:         3,        // higher scale = sharper text
+    useCORS:       true,
+    scrollY:       0,
+    letterRendering: true,   // renders each letter individually = copyable
+    allowTaint:    false,
+  },
+  jsPDF: {
+    unit:        'mm',
+    format:      'a4',
+    orientation: 'portrait',
+    compress:    false,      // no compression = text stays selectable
+  },
+  pagebreak: { mode: ['css', 'legacy'] },
+};
 
     try {
       // Generate blob → download to browser
