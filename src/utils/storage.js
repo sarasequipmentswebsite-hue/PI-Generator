@@ -38,6 +38,7 @@ function seedUsers() {
     { id: 8,  username: 'Viplabh',  password: 'SARAS', full_name: 'Viplabh'               },
     { id: 9,  username: 'Kuldeep',  password: 'SARAS', full_name: 'Kuldeep Singh Chauhan'  },
     { id: 10, username: 'Rajendra', password: 'SARAS', full_name: 'Rajendra Anand'         },
+    { id: 11, username: 'Abhishek', password: 'SARAS', full_name: 'Abhishek'           },
   ];
   localStorage.setItem(USERS_KEY, JSON.stringify(defaultUsers));
 }
