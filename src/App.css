@@ -243,3 +243,11 @@ html, body, #root {
   width: 210mm;
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
 }
+
+.topbar-emp-id {
+  margin-left: 0.35rem;
+  font-size: 0.65rem;
+  color: #f59e0b;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}

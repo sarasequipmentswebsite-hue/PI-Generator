@@ -11,7 +11,7 @@ import {
 } from './utils/storage';
 import './App.css';
 
-// ── helpers ──────────────────────────────────────────────────────
+// ── helpers ───────────────────────────────────────────────────────
 function getToday() {
   const d = new Date();
   return [
@@ -21,9 +21,10 @@ function getToday() {
   ].join('-');
 }
 
-function blankForm() {
+function blankForm(employeeId = 'SL') {
   return {
     invoiceSuffix:     '',
+    employeeId:        employeeId,
     invoiceDate:       getToday(),
     deliveryNote:      '',
     deliveryNoteDate:  '',
@@ -44,10 +45,10 @@ function blankForm() {
     ],
     discount:    { type: 'none', value: '' },
     bankDetails: {
-      name:       'ICICI Bank Limited',
-      accountNo:  '235405500611',
-      branch:     'Nangloi',
-      ifsc:       'ICIC0002354',
+      name:      'ICICI Bank Limited',
+      accountNo: '235405500611',
+      branch:    'Nangloi',
+      ifsc:      'ICIC0002354',
     },
     companyPan: 'ABMCS6189C',
   };
@@ -55,49 +56,60 @@ function blankForm() {
 
 // ─────────────────────────────────────────────────────────────────
 export default function App() {
-  // ── state ──────────────────────────────────────────────────────
-  const [user,       setUser]       = useState(null);     // logged-in user object
-  const [checking,   setChecking]   = useState(true);     // initial session check
-  const [view,       setView]       = useState('invoice'); // 'invoice' | 'history'
-  const [activeTab,  setActiveTab]  = useState('form');    // 'form' | 'preview'
-  const [formData,   setFormData]   = useState(blankForm());
-  const [isEdit,     setIsEdit]     = useState(false);     // editing existing PI
-  const [pdfLoading, setPdfLoading] = useState(false);
-  const [saveMsg,    setSaveMsg]    = useState('');        // feedback after save
 
-  // ── on mount: restore session ───────────────────────────────────
+  const [user,       setUser]       = useState(null);
+  const [checking,   setChecking]   = useState(true);
+  const [view,       setView]       = useState('invoice');
+  const [activeTab,  setActiveTab]  = useState('form');
+  const [formData,   setFormData]   = useState(blankForm());
+  const [isEdit,     setIsEdit]     = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [saveMsg,    setSaveMsg]    = useState('');
+
+  // ── Restore session on mount ──────────────────────────────────
   useEffect(() => {
     const session = checkSession();
     if (session.logged_in) {
-      setUser({ user_id: session.user_id, username: session.username, full_name: session.full_name });
+      setUser({
+        user_id:     session.user_id,
+        username:    session.username,
+        full_name:   session.full_name,
+        employee_id: session.employee_id,
+      });
     }
     setChecking(false);
   }, []);
 
-  // ── when user logs in: load next invoice number ─────────────────
-useEffect(() => {
-  if (user && !isEdit) {
-    loadNextNo(user.employee_id);
+  // ── Load next invoice number when user is set ─────────────────
+  useEffect(() => {
+    if (user && !isEdit) {
+      loadNextNo(user.employee_id);
+    }
+  }, [user]);
+
+  function loadNextNo(employeeId) {
+    const empId = employeeId || 'SL';
+    const res   = fetchNextNo(empId);
+    if (res.success) {
+      setFormData(prev => ({
+        ...prev,
+        invoiceSuffix: String(res.next_suffix),
+        employeeId:    empId,
+      }));
+    }
   }
-}, [user]);
 
-function loadNextNo(employeeId) {
-  const res = fetchNextNo(employeeId);
-  if (res.success) {
-    setFormData(prev => ({
-      ...prev,
-      invoiceSuffix: String(res.next_suffix),
-      employeeId:    employeeId,   // store in formData so preview uses it
-    }));
-  }
-}
+  // ── Login ─────────────────────────────────────────────────────
+  const handleLogin = (userData) => {
+    setUser({
+      user_id:     userData.user_id,
+      username:    userData.username,
+      full_name:   userData.full_name,
+      employee_id: userData.employee_id,
+    });
+  };
 
-  // ── auth handlers ───────────────────────────────────────────────
- const handleLogin = (userData) => {
-  // employee_id comes from loginUser() in storage.js
-  setUser(userData);
-};
-
+  // ── Logout ────────────────────────────────────────────────────
   const handleLogout = () => {
     logoutUser();
     setUser(null);
@@ -108,21 +120,20 @@ function loadNextNo(employeeId) {
     setSaveMsg('');
   };
 
-  // ── new PI ──────────────────────────────────────────────────────
+  // ── New PI ────────────────────────────────────────────────────
   const handleNewPI = () => {
-  const empId = user?.employee_id || 'XX';
-  const res   = fetchNextNo(empId);
-  const form  = blankForm();
-  if (res.success) form.invoiceSuffix = String(res.next_suffix);
-  form.employeeId = empId;
-  setFormData(form);
-  setIsEdit(false);
-  setSaveMsg('');
-  setView('invoice');
-  setActiveTab('form');
-};
+    const empId = user?.employee_id || 'SL';
+    const res   = fetchNextNo(empId);
+    const form  = blankForm(empId);
+    if (res.success) form.invoiceSuffix = String(res.next_suffix);
+    setFormData(form);
+    setIsEdit(false);
+    setSaveMsg('');
+    setView('invoice');
+    setActiveTab('form');
+  };
 
-  // ── edit existing PI (called from HistoryPage) ──────────────────
+  // ── Edit invoice from history ─────────────────────────────────
   const handleEditInvoice = (savedFormData) => {
     setFormData(savedFormData);
     setIsEdit(true);
@@ -131,49 +142,49 @@ function loadNextNo(employeeId) {
     setActiveTab('form');
   };
 
-  // ── download + save ─────────────────────────────────────────────
+  // ── Download + Save ───────────────────────────────────────────
   const handleDownload = async () => {
     setSaveMsg('');
     setActiveTab('preview');
     setPdfLoading(true);
 
-    // Let React render the preview first
     await new Promise(r => setTimeout(r, 400));
 
     const element = document.getElementById('invoice-preview-content');
     if (!element) { setPdfLoading(false); return; }
 
+    const empId     = formData.employeeId || user?.employee_id || 'SL';
     const buyerSafe = (formData.buyer?.name || 'unknown')
       .replace(/[^A-Za-z0-9\s]/g, '')
       .replace(/\s+/g, '_');
-    const filename  = `SEPL-PI-SL-26-27-${formData.invoiceSuffix}_${buyerSafe}.pdf`;
+    const filename  = `SEPL-PI-${empId}-26-27-${formData.invoiceSuffix}_${buyerSafe}.pdf`;
 
     const html2pdf = (await import('html2pdf.js')).default;
-   // REPLACE WITH:
-const opt = {
-  margin:      [6, 6, 6, 6],
-  filename,
-  // Use 'png' not 'jpeg' — better text rendering
-  image:       { type: 'png', quality: 1 },
-  html2canvas: {
-    scale:         3,        // higher scale = sharper text
-    useCORS:       true,
-    scrollY:       0,
-    letterRendering: true,   // renders each letter individually = copyable
-    allowTaint:    false,
-  },
-  jsPDF: {
-    unit:        'mm',
-    format:      'a4',
-    orientation: 'portrait',
-    compress:    false,      // no compression = text stays selectable
-  },
-  pagebreak: { mode: ['css', 'legacy'] },
-};
+
+    const opt = {
+      margin:      [6, 6, 6, 6],
+      filename,
+      image:       { type: 'png', quality: 1 },
+      html2canvas: {
+        scale:           3,
+        useCORS:         true,
+        scrollY:         0,
+        letterRendering: true,
+        allowTaint:      false,
+      },
+      jsPDF: {
+        unit:        'mm',
+        format:      'a4',
+        orientation: 'portrait',
+        compress:    false,
+      },
+      pagebreak: { mode: ['css', 'legacy'] },
+    };
 
     try {
-      // Generate blob → download to browser
       const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
+
+      // Download to browser
       const url  = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url; link.download = filename; link.click();
@@ -183,7 +194,7 @@ const opt = {
       const saveRes = saveInvoice(formData, isEdit);
       if (saveRes.success) {
         setSaveMsg('✅ Saved');
-        if (!isEdit) setIsEdit(true); // prevent duplicate on next download
+        if (!isEdit) setIsEdit(true);
       } else {
         setSaveMsg('⚠️ ' + saveRes.error);
       }
@@ -194,9 +205,7 @@ const opt = {
     }
   };
 
-  // ── render ──────────────────────────────────────────────────────
-
-  // Still checking session
+  // ── Render: splash ────────────────────────────────────────────
   if (checking) {
     return (
       <div className="app-splash">
@@ -205,12 +214,15 @@ const opt = {
     );
   }
 
-  // Not logged in
+  // ── Render: login ─────────────────────────────────────────────
   if (!user) {
     return <LoginPage onLogin={handleLogin} />;
   }
 
-  // Logged in
+  // ── Render: app ───────────────────────────────────────────────
+  const empId     = formData.employeeId || user.employee_id || 'SL';
+  const invoiceNo = `SEPL/PI/${empId}/26-27/${formData.invoiceSuffix || ''}`;
+
   return (
     <div className="app-root">
 
@@ -222,8 +234,8 @@ const opt = {
             <span className="topbar-company">Saras Equipments Pvt. Ltd.</span>
             <span className="topbar-subtitle">
               {isEdit
-                ? `✏️ Editing — ${formData.invoiceSuffix ? 'SEPL/PI/SL/26-27/' + formData.invoiceSuffix : ''}`
-                : `New Proforma Invoice`
+                ? `✏️ Editing — ${invoiceNo}`
+                : `New Proforma Invoice — ${invoiceNo}`
               }
             </span>
           </div>
@@ -231,7 +243,6 @@ const opt = {
 
         <div className="topbar-right">
 
-          {/* Edit/Preview tabs — only in invoice view */}
           {view === 'invoice' && (
             <>
               <div className="tabs">
@@ -255,12 +266,10 @@ const opt = {
             </>
           )}
 
-          {/* New PI button */}
           <button className="tb-btn" onClick={handleNewPI}>
             + New PI
           </button>
 
-          {/* History toggle */}
           <button
             className={`tb-btn ${view === 'history' ? 'tb-btn-active' : ''}`}
             onClick={() => setView(view === 'history' ? 'invoice' : 'history')}
@@ -268,9 +277,11 @@ const opt = {
             📋 History
           </button>
 
-          {/* User info + logout */}
           <div className="topbar-user">
-            <span className="topbar-user-name">{user.full_name}</span>
+            <span className="topbar-user-name">
+              {user.full_name}
+              <span className="topbar-emp-id">[{user.employee_id}]</span>
+            </span>
             <button className="tb-logout" onClick={handleLogout}>Logout</button>
           </div>
 
@@ -279,25 +290,19 @@ const opt = {
 
       {/* ── MAIN CONTENT ── */}
       <main className="app-main">
-
         {view === 'history' ? (
-
           <HistoryPage
             user={user}
             onEditInvoice={handleEditInvoice}
             onNewInvoice={handleNewPI}
           />
-
         ) : (
           <>
-            {/* FORM PANEL */}
             <div className={`panel panel-form ${activeTab === 'form' ? 'panel-visible' : 'panel-hidden'}`}>
               <div className="panel-scroll">
                 <InvoiceForm formData={formData} setFormData={setFormData} />
               </div>
             </div>
-
-            {/* PREVIEW PANEL */}
             <div className={`panel panel-preview ${activeTab === 'preview' ? 'panel-visible' : 'panel-hidden'}`}>
               <div className="panel-scroll preview-bg">
                 <div className="preview-shadow-wrap">
@@ -307,8 +312,8 @@ const opt = {
             </div>
           </>
         )}
-
       </main>
+
     </div>
   );
 }
