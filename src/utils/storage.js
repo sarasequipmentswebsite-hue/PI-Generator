@@ -5,28 +5,36 @@
 const USERS_KEY    = 'sepl_users';
 const SESSION_KEY  = 'sepl_session';
 const INVOICES_KEY = 'sepl_invoices';
+const USERS_VER_KEY = 'sepl_users_version';
+
+// ── BUMP THIS NUMBER every time you change the users list ────────
+// Changing this forces all browsers to reload the new user list
+const CURRENT_USERS_VERSION = 2;
 
 // ── Generate 2-letter employee ID from full name ─────────────────
-// Rule: First initial of first name + First initial of last name
-// If no last name: first two letters of first name
 export function getEmployeeId(fullName) {
   if (!fullName) return 'XX';
   const parts = fullName.trim().split(/\s+/);
   if (parts.length === 1) {
-    // Only one name — take first two letters
     return parts[0].substring(0, 2).toUpperCase();
   }
-  // First letter of first name + First letter of LAST name
-  // (ignores middle names like "Kumar" in "Dilip Kumar Gupta")
   const first = parts[0][0];
   const last  = parts[parts.length - 1][0];
   return (first + last).toUpperCase();
 }
 
 // ── Seed default employees ───────────────────────────────────────
+// Runs on every app load — compares version number
+// If version changed → wipes old users and writes fresh list
 function seedUsers() {
-  const existing = localStorage.getItem(USERS_KEY);
-  if (existing) return;
+  const storedVersion = parseInt(localStorage.getItem(USERS_VER_KEY) || '0');
+
+  if (storedVersion === CURRENT_USERS_VERSION) return; // already up to date
+
+  // Version mismatch — clear old users and re-seed
+  localStorage.removeItem(USERS_KEY);
+  // NOTE: we do NOT clear INVOICES_KEY — existing invoices are preserved
+
   const defaultUsers = [
     { id: 1,  username: 'Neelam',   password: 'SARAS', full_name: 'Neelam Sager'          },
     { id: 2,  username: 'Dilip',    password: 'SARAS', full_name: 'Dilip Kumar Gupta'      },
@@ -35,12 +43,14 @@ function seedUsers() {
     { id: 5,  username: 'Vishal',   password: 'SARAS', full_name: 'Vishal Rathore'         },
     { id: 6,  username: 'Ankit',    password: 'SARAS', full_name: 'Ankit Chourasia'        },
     { id: 7,  username: 'Satnam',   password: 'SARAS', full_name: 'Satnam Mam'             },
-    { id: 8,  username: 'Viplabh',  password: 'SARAS', full_name: 'Viplabh'               },
+    { id: 8,  username: 'Viplabh',  password: 'SARAS', full_name: 'Viplabh'                },
     { id: 9,  username: 'Kuldeep',  password: 'SARAS', full_name: 'Kuldeep Singh Chauhan'  },
     { id: 10, username: 'Rajendra', password: 'SARAS', full_name: 'Rajendra Anand'         },
-    { id: 11, username: 'Abhishek', password: 'SARAS', full_name: 'Abhishek'           },
+    { id: 11, username: 'Abhishek', password: 'SARAS', full_name: 'Abhishek'               },
   ];
+
   localStorage.setItem(USERS_KEY, JSON.stringify(defaultUsers));
+  localStorage.setItem(USERS_VER_KEY, String(CURRENT_USERS_VERSION));
 }
 
 // ── Auth ─────────────────────────────────────────────────────────
@@ -49,7 +59,6 @@ export function checkSession() {
   const s = localStorage.getItem(SESSION_KEY);
   if (!s) return { logged_in: false };
   const session = JSON.parse(s);
-  // Always attach employee_id to session
   session.employee_id = getEmployeeId(session.full_name);
   return { logged_in: true, ...session };
 }
@@ -77,11 +86,8 @@ export function logoutUser() {
 }
 
 // ── Invoice Number ────────────────────────────────────────────────
-// Format: SEPL/PI/{EMPLOYEE_ID}/26-27/{NUMBER}
-// e.g.  : SEPL/PI/NS/26-27/1  for Neelam Sager
 export function fetchNextNo(employeeId) {
-  const invoices = JSON.parse(localStorage.getItem(INVOICES_KEY) || '[]');
-  // Find highest suffix for THIS employee only
+  const invoices   = JSON.parse(localStorage.getItem(INVOICES_KEY) || '[]');
   const myInvoices = invoices.filter(inv => inv.employee_id === employeeId);
   const max        = myInvoices.reduce((m, inv) => Math.max(m, inv.invoice_suffix), 0);
   return { success: true, next_suffix: max + 1 };
@@ -93,15 +99,15 @@ export function saveInvoice(formData, isEdit = false) {
   const userId  = session.user_id;
   if (!userId) return { success: false, error: 'Not logged in' };
 
-  const suffix      = parseInt(formData.invoiceSuffix);
-  const employeeId  = formData.employeeId || getEmployeeId(session.full_name);
-  if (!suffix)      return { success: false, error: 'Invalid invoice number' };
+  const suffix     = parseInt(formData.invoiceSuffix);
+  const employeeId = formData.employeeId || getEmployeeId(session.full_name);
+  if (!suffix)     return { success: false, error: 'Invalid invoice number' };
 
-  const invoices   = JSON.parse(localStorage.getItem(INVOICES_KEY) || '[]');
-  const buyerName  = formData.buyer?.name || 'unknown';
-  const safeBuyer  = buyerName.replace(/[^A-Za-z0-9\s]/g, '').replace(/\s+/g, '_');
-  const invoiceNo  = `SEPL/PI/${employeeId}/26-27/${suffix}`;
-  const filename   = `SEPL-PI-${employeeId}-26-27-${suffix}_${safeBuyer}.pdf`;
+  const invoices  = JSON.parse(localStorage.getItem(INVOICES_KEY) || '[]');
+  const buyerName = formData.buyer?.name || 'unknown';
+  const safeBuyer = buyerName.replace(/[^A-Za-z0-9\s]/g, '').replace(/\s+/g, '_');
+  const invoiceNo = `SEPL/PI/${employeeId}/26-27/${suffix}`;
+  const filename  = `SEPL-PI-${employeeId}-26-27-${suffix}_${safeBuyer}.pdf`;
 
   if (isEdit) {
     const idx = invoices.findIndex(
@@ -116,11 +122,13 @@ export function saveInvoice(formData, isEdit = false) {
       updated_at:   new Date().toISOString(),
     };
   } else {
-    // Check duplicate only within this employee's invoices
     const exists = invoices.find(
       inv => inv.invoice_suffix === suffix && inv.employee_id === employeeId
     );
-    if (exists) return { success: false, error: `Invoice #${suffix} already exists for ${employeeId}. Click + New PI.` };
+    if (exists) return {
+      success: false,
+      error: `Invoice #${suffix} already exists for ${employeeId}. Click + New PI.`
+    };
     invoices.push({
       id:             Date.now(),
       invoice_suffix: suffix,
