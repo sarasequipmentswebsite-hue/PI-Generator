@@ -536,3 +536,53 @@
   margin: 0;
   padding: 0;
 }
+/* ════════════════════════════════════════════════════════════════
+   PRINT STYLES — used when browser print dialog opens
+   Ensures perfect A4 output with real selectable text
+   ════════════════════════════════════════════════════════════════ */
+@media print {
+  .inv-page {
+    width: 100% !important;
+    height: auto !important;
+    min-height: unset !important;
+    overflow: visible !important;
+    border: 1.5px solid #000 !important;
+    page-break-after: always;
+    break-after: page;
+  }
+
+  .inv-page:last-child {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .items-tbl {
+    display: table !important;
+    flex: unset !important;
+    width: 100% !important;
+  }
+
+  .items-tbl thead {
+    display: table-header-group !important;
+  }
+
+  .items-tbl tbody {
+    display: table-row-group !important;
+    flex: unset !important;
+  }
+
+  .stretch-row {
+    display: table-row !important;
+    flex: unset !important;
+    height: 15mm;
+  }
+
+  .item-row,
+  .discount-row,
+  .gst-line-row,
+  .total-row {
+    display: table-row !important;
+  }
+
+  .continued-bar { display: none; }
+}

@@ -3,6 +3,7 @@ import InvoiceForm    from './components/InvoiceForm';
 import InvoicePreview from './components/InvoicePreview';
 import LoginPage      from './pages/LoginPage';
 import HistoryPage    from './pages/HistoryPage';
+import { downloadPDF } from './utils/pdfExport';
 import {
   checkSession,
   logoutUser,
@@ -143,68 +144,40 @@ export default function App() {
   };
 
   // ── Download + Save ───────────────────────────────────────────
-  const handleDownload = async () => {
-    setSaveMsg('');
-    setActiveTab('preview');
-    setPdfLoading(true);
+  // FIND the entire handleDownload function and REPLACE WITH:
+const handleDownload = async () => {
+  setSaveMsg('');
+  setActiveTab('preview');
+  setPdfLoading(true);
 
-    await new Promise(r => setTimeout(r, 400));
+  // Let React render the preview
+  await new Promise(r => setTimeout(r, 400));
 
-    const element = document.getElementById('invoice-preview-content');
-    if (!element) { setPdfLoading(false); return; }
+  const empId     = formData.employeeId || user?.employee_id || 'SL';
+  const buyerSafe = (formData.buyer?.name || 'unknown')
+    .replace(/[^A-Za-z0-9\s]/g, '')
+    .replace(/\s+/g, '_');
+  const filename  = `SEPL-PI-${empId}-26-27-${formData.invoiceSuffix}_${buyerSafe}.pdf`;
 
-    const empId     = formData.employeeId || user?.employee_id || 'SL';
-    const buyerSafe = (formData.buyer?.name || 'unknown')
-      .replace(/[^A-Za-z0-9\s]/g, '')
-      .replace(/\s+/g, '_');
-    const filename  = `SEPL-PI-${empId}-26-27-${formData.invoiceSuffix}_${buyerSafe}.pdf`;
+  try {
+    // Opens browser print dialog — user clicks Save as PDF
+    // Result: real text PDF, copyable, tiny file size
+    await downloadPDF(filename);
 
-    const html2pdf = (await import('html2pdf.js')).default;
-
-    const opt = {
-      margin:      [6, 6, 6, 6],
-      filename,
-      image:       { type: 'png', quality: 1 },
-      html2canvas: {
-        scale:           3,
-        useCORS:         true,
-        scrollY:         0,
-        letterRendering: true,
-        allowTaint:      false,
-      },
-      jsPDF: {
-        unit:        'mm',
-        format:      'a4',
-        orientation: 'portrait',
-        compress:    false,
-      },
-      pagebreak: { mode: ['css', 'legacy'] },
-    };
-
-    try {
-      const pdfBlob = await html2pdf().set(opt).from(element).outputPdf('blob');
-
-      // Download to browser
-      const url  = URL.createObjectURL(pdfBlob);
-      const link = document.createElement('a');
-      link.href = url; link.download = filename; link.click();
-      URL.revokeObjectURL(url);
-
-      // Save record to storage
-      const saveRes = saveInvoice(formData, isEdit);
-      if (saveRes.success) {
-        setSaveMsg('✅ Saved');
-        if (!isEdit) setIsEdit(true);
-      } else {
-        setSaveMsg('⚠️ ' + saveRes.error);
-      }
-    } catch (err) {
-      setSaveMsg('❌ Error: ' + err.message);
-    } finally {
-      setPdfLoading(false);
+    // Save record to storage after download initiated
+    const saveRes = saveInvoice(formData, isEdit);
+    if (saveRes.success) {
+      setSaveMsg('✅ Saved — use "Save as PDF" in print dialog');
+      if (!isEdit) setIsEdit(true);
+    } else {
+      setSaveMsg('⚠️ ' + saveRes.error);
     }
-  };
-
+  } catch (err) {
+    setSaveMsg('❌ Error: ' + err.message);
+  } finally {
+    setPdfLoading(false);
+  }
+};
   // ── Render: splash ────────────────────────────────────────────
   if (checking) {
     return (
