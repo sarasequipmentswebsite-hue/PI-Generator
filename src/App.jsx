@@ -474,6 +474,7 @@ const handleDownload = async () => {
   setPdfLoading(true);
 
   const empId     = formData.employeeId || user?.employee_id || 'SL';
+  
   const buyerSafe = (formData.buyer?.name || 'unknown')
     .replace(/[^A-Za-z0-9\s]/g, '')
     .replace(/\s+/g, '_');
