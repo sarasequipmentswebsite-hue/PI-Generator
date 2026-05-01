@@ -591,3 +591,9 @@
   width: 794px;
   background: #fff;
 }
+
+/* Override fixed width for PDF capture */
+#invoice-preview-content {
+  width: 100%;
+  background: #fff;
+}
