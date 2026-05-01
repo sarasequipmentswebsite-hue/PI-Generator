@@ -150,8 +150,8 @@ const handleDownload = async () => {
   setActiveTab('preview');
   setPdfLoading(true);
 
-  // Let React render the preview
-  await new Promise(r => setTimeout(r, 400));
+  // Let React render the preview panel fully
+  await new Promise(r => setTimeout(r, 500));
 
   const empId     = formData.employeeId || user?.employee_id || 'SL';
   const buyerSafe = (formData.buyer?.name || 'unknown')
@@ -160,23 +160,48 @@ const handleDownload = async () => {
   const filename  = `SEPL-PI-${empId}-26-27-${formData.invoiceSuffix}_${buyerSafe}.pdf`;
 
   try {
-    // Opens browser print dialog — user clicks Save as PDF
-    // Result: real text PDF, copyable, tiny file size
-    await downloadPDF(filename);
+    // Direct download — no print dialog
+    await downloadPDF('invoice-preview-content', filename);
 
-    // Save record to storage after download initiated
+    // Save record to localStorage
     const saveRes = saveInvoice(formData, isEdit);
     if (saveRes.success) {
-      setSaveMsg('✅ Saved — use "Save as PDF" in print dialog');
+      setSaveMsg('✅ Downloaded & Saved');
       if (!isEdit) setIsEdit(true);
     } else {
-      setSaveMsg('⚠️ ' + saveRes.error);
+      setSaveMsg('⚠️ Downloaded but: ' + saveRes.error);
     }
   } catch (err) {
-    setSaveMsg('❌ Error: ' + err.message);
+    // Fallback: if foreignObjectRendering fails in some browsers,
+    // fall back to standard canvas render
+    console.warn('Primary PDF method failed, trying fallback:', err.message);
+    try {
+      await fallbackDownload(filename);
+      const saveRes = saveInvoice(formData, isEdit);
+      if (saveRes.success && !isEdit) setIsEdit(true);
+      setSaveMsg('✅ Downloaded');
+    } catch (err2) {
+      setSaveMsg('❌ PDF Error: ' + err2.message);
+    }
   } finally {
     setPdfLoading(false);
   }
+};
+
+// Fallback using html2pdf if jsPDF fails
+const fallbackDownload = async (filename) => {
+  const element = document.getElementById('invoice-preview-content');
+  if (!element) throw new Error('Element not found');
+  const html2pdf = (await import('html2pdf.js')).default;
+  const opt = {
+    margin:      [6, 6, 6, 6],
+    filename,
+    image:       { type: 'jpeg', quality: 0.85 },
+    html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait', compress: true },
+    pagebreak:   { mode: ['css', 'legacy'] },
+  };
+  return html2pdf().set(opt).from(element).save();
 };
   // ── Render: splash ────────────────────────────────────────────
   if (checking) {

@@ -586,3 +586,8 @@
 
   .continued-bar { display: none; }
 }
+
+#invoice-preview-content {
+  width: 794px;
+  background: #fff;
+}
