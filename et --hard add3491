@@ -1,0 +1,27 @@
+[33m11c3a42[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m revert: Revert "Dilip Sir name fixed"
+[33mf84cd32[m Reverting "Update package-lock.json".
+[33m94b3839[m ..
+[33m5b973f8[m aPP.JSX UPDATED.
+[33mf41c2de[m Fixing downlaod Problems.
+[33m9d73461[m Fixing vulnerabilities by updating dependencies
+[33m245096f[m pdf SIZE REDUCED AND COPYABLE TEXT ADDED TO PDF.
+[33madd3491[m Dilip Sir name fixed.
+[33meadab68[m Fixing and testing employee ID display in the top bar
+[33me3c79e8[m Abhishek added
+[33m028384b[m PI number generation logic to use employee ID from form data, with fallback to 'SL' if not available. This allows for dynamic invoice numbers based on the logged-in employee.
+[33mb369eff[m Rajendra sir added
+[33mc8a6ae4[m ....
+[33m0abcf3f[m Auth + History Pages
+[33mb94e1ab[m ........
+[33mc16ad38[m ......
+[33mb6e7137[m .....
+[33mf29d946[m .....
+[33m6037450[m ....
+[33m3e21bfc[m ...
+[33m0fee003[m ..
+[33m7386e64[m .
+[33m5713013[m Space alignment in the code snippet is not preserved. Please adjust the indentation as needed.
+[33m7d6c1a0[m Fixed unit display in invoice preview
+[33m999c391[m fix build issue
+[33m4b70c30[m ..
+[33mcb0c976[m first commit
