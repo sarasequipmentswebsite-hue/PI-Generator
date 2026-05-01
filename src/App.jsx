@@ -333,6 +333,8 @@ import {
   saveInvoice,
 } from './utils/storage';
 import './App.css';
+import { pdf } from '@react-pdf/renderer';
+import InvoicePDF from './utils/InvoicePDF';
 
 // ── helpers ───────────────────────────────────────────────────────
 function getToday() {
@@ -466,37 +468,44 @@ export default function App() {
   };
 
   // ── Download + Save ───────────────────────────────────────────
-  const handleDownload = async () => {
-    setSaveMsg('');
-    setActiveTab('preview');
-    setPdfLoading(true);
+ // REPLACE the entire handleDownload function:
+const handleDownload = async () => {
+  setSaveMsg('');
+  setPdfLoading(true);
 
-    // Let React render the preview fully
-    await new Promise(r => setTimeout(r, 500));
+  const empId     = formData.employeeId || user?.employee_id || 'SL';
+  const buyerSafe = (formData.buyer?.name || 'unknown')
+    .replace(/[^A-Za-z0-9\s]/g, '')
+    .replace(/\s+/g, '_');
+  const filename  = `SEPL-PI-${empId}-26-27-${formData.invoiceSuffix}_${buyerSafe}.pdf`;
 
-    const empId     = formData.employeeId || user?.employee_id || 'SL';
-    const buyerSafe = (formData.buyer?.name || 'unknown')
-      .replace(/[^A-Za-z0-9\s]/g, '')
-      .replace(/\s+/g, '_');
-    const filename  = `SEPL-PI-${empId}-26-27-${formData.invoiceSuffix}_${buyerSafe}.pdf`;
+  try {
+    // Generate PDF blob directly — no canvas, no print dialog
+    const blob = await pdf(<InvoicePDF formData={formData} />).toBlob();
 
-    try {
-      await generateAndDownloadPDF(filename);
+    // Direct download
+    const url  = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href     = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
 
-      const saveRes = saveInvoice(formData, isEdit);
-      if (saveRes.success) {
-        setSaveMsg('✅ Downloaded & Saved');
-        if (!isEdit) setIsEdit(true);
-      } else {
-        setSaveMsg('⚠️ Downloaded but: ' + saveRes.error);
-      }
-    } catch (err) {
-      setSaveMsg('❌ PDF Error: ' + err.message);
-      console.error('PDF generation failed:', err);
-    } finally {
-      setPdfLoading(false);
+    // Save record
+    const saveRes = saveInvoice(formData, isEdit);
+    if (saveRes.success) {
+      setSaveMsg('✅ Downloaded & Saved');
+      if (!isEdit) setIsEdit(true);
+    } else {
+      setSaveMsg('⚠️ Downloaded but: ' + saveRes.error);
     }
-  };
+  } catch (err) {
+    setSaveMsg('❌ PDF Error: ' + err.message);
+    console.error(err);
+  } finally {
+    setPdfLoading(false);
+  }
+};
 
   // ── Core PDF generator ────────────────────────────────────────
   const generateAndDownloadPDF = async (filename) => {
