@@ -927,10 +927,15 @@ export default function App() {
       // Save record to storage
       const saveRes = saveInvoice(formData, isEdit);
       if (saveRes.success) {
-        setSaveMsg('✅ Saved');
-        if (!isEdit) setIsEdit(true);
+        setSaveMsg(isEdit ? '✅ Revision saved separately' : '✅ Downloaded & Saved');
+        if (!isEdit) {
+          setIsEdit(true);
+        } else if (saveRes.updatedFormData) {
+          // Update formData so the suffix and date reflect the new revision
+          setFormData(saveRes.updatedFormData);
+        }
       } else {
-        setSaveMsg('⚠️ ' + saveRes.error);
+        setSaveMsg('⚠️ Downloaded but: ' + saveRes.error);
       }
     } catch (err) {
       setSaveMsg('❌ Error: ' + err.message);

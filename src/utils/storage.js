@@ -94,6 +94,7 @@ export function fetchNextNo(employeeId) {
 }
 
 // ── Save / Update Invoice ─────────────────────────────────────────
+// REPLACE WITH:
 export function saveInvoice(formData, isEdit = false) {
   const session = JSON.parse(localStorage.getItem(SESSION_KEY) || '{}');
   const userId  = session.user_id;
@@ -106,22 +107,61 @@ export function saveInvoice(formData, isEdit = false) {
   const invoices  = JSON.parse(localStorage.getItem(INVOICES_KEY) || '[]');
   const buyerName = formData.buyer?.name || 'unknown';
   const safeBuyer = buyerName.replace(/[^A-Za-z0-9\s]/g, '').replace(/\s+/g, '_');
-  const invoiceNo = `SEPL/PI/${employeeId}/26-27/${suffix}`;
-  const filename  = `SEPL-PI-${employeeId}-26-27-${suffix}_${safeBuyer}.pdf`;
+  const now       = new Date().toISOString();
+
+  // Today's date in DD-MM-YYYY format — always used for edited copy
+  const todayFormatted = (() => {
+    const d = new Date();
+    return [
+      String(d.getDate()).padStart(2, '0'),
+      String(d.getMonth() + 1).padStart(2, '0'),
+      d.getFullYear(),
+    ].join('-');
+  })();
 
   if (isEdit) {
-    const idx = invoices.findIndex(
-      inv => inv.invoice_suffix === suffix && inv.employee_id === employeeId
+    // ── EDITED PI: save as a NEW separate record ──────────────
+    // Suffix gets "-R1", "-R2" etc. to distinguish from original
+    // Find how many revisions already exist for this suffix
+    const revisions = invoices.filter(
+      inv => inv.original_suffix === suffix && inv.employee_id === employeeId
     );
-    if (idx === -1) return { success: false, error: 'Invoice not found or access denied' };
-    invoices[idx] = {
-      ...invoices[idx],
-      buyer_name:   buyerName,
-      pdf_filename: filename,
-      form_data:    { ...formData, invoiceNo },
-      updated_at:   new Date().toISOString(),
+    const revNo      = revisions.length + 1;
+    const revSuffix  = `${suffix}-R${revNo}`;
+    const invoiceNo  = `SEPL/PI/${employeeId}/26-27/${revSuffix}`;
+    const filename   = `SEPL-PI-${employeeId}-26-27-${revSuffix}_${safeBuyer}.pdf`;
+
+    // Updated formData with today's date and new invoice number
+    const updatedFormData = {
+      ...formData,
+      invoiceDate:   todayFormatted,   // ← today's date, not original
+      invoiceSuffix: revSuffix,
+      invoiceNo,
     };
+
+    invoices.push({
+      id:              Date.now(),
+      invoice_suffix:  revSuffix,
+      invoice_no:      invoiceNo,
+      original_suffix: suffix,         // ← links back to original
+      is_revision:     true,
+      revision_no:     revNo,
+      employee_id:     employeeId,
+      buyer_name:      buyerName,
+      pdf_filename:    filename,
+      form_data:       updatedFormData,
+      created_by:      userId,
+      created_at:      now,            // ← today's timestamp
+    });
+
+    localStorage.setItem(INVOICES_KEY, JSON.stringify(invoices));
+    return { success: true, filename, invoiceNo, updatedFormData };
+
   } else {
+    // ── NEW PI: normal save ───────────────────────────────────
+    const invoiceNo = `SEPL/PI/${employeeId}/26-27/${suffix}`;
+    const filename  = `SEPL-PI-${employeeId}-26-27-${suffix}_${safeBuyer}.pdf`;
+
     const exists = invoices.find(
       inv => inv.invoice_suffix === suffix && inv.employee_id === employeeId
     );
@@ -129,21 +169,23 @@ export function saveInvoice(formData, isEdit = false) {
       success: false,
       error: `Invoice #${suffix} already exists for ${employeeId}. Click + New PI.`
     };
+
     invoices.push({
       id:             Date.now(),
       invoice_suffix: suffix,
       invoice_no:     invoiceNo,
+      is_revision:    false,
       employee_id:    employeeId,
       buyer_name:     buyerName,
       pdf_filename:   filename,
       form_data:      { ...formData, invoiceNo },
       created_by:     userId,
-      created_at:     new Date().toISOString(),
+      created_at:     now,
     });
-  }
 
-  localStorage.setItem(INVOICES_KEY, JSON.stringify(invoices));
-  return { success: true, filename, invoiceNo };
+    localStorage.setItem(INVOICES_KEY, JSON.stringify(invoices));
+    return { success: true, filename, invoiceNo };
+  }
 }
 
 // ── History for current user ──────────────────────────────────────
